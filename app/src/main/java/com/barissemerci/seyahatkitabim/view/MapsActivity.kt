@@ -1,4 +1,4 @@
-package com.barissemerci.seyahatkitabim
+package com.barissemerci.seyahatkitabim.view
 
 import android.Manifest
 import android.content.SharedPreferences
@@ -10,11 +10,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.room.Room
+import com.barissemerci.seyahatkitabim.R
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -23,6 +24,9 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.barissemerci.seyahatkitabim.databinding.ActivityMapsBinding
+import com.barissemerci.seyahatkitabim.model.Place
+import com.barissemerci.seyahatkitabim.roomdb.PlaceDao
+import com.barissemerci.seyahatkitabim.roomdb.PlaceDatabase
 import com.google.android.material.snackbar.Snackbar
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
@@ -36,6 +40,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLon
     private var trackBoolean: Boolean? = null
     private var selectedLatitude:Double?=null
     private var selectedLongitude: Double?=null
+    private lateinit var db: PlaceDatabase
+    private lateinit var placeDao: PlaceDao
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +59,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLon
         trackBoolean = false
         selectedLatitude=0.0
         selectedLongitude=0.0
+        db= Room.databaseBuilder(applicationContext,PlaceDatabase::class.java,"Places").build()
+        placeDao = db.placeDao()
     }
 
     /**
@@ -178,7 +186,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLon
     }
 
     fun save(view : View){
-
+        if(selectedLatitude!=null && selectedLongitude!=null ){
+            val place= Place(binding.placeText.text.toString(),selectedLatitude!!,selectedLongitude!!)
+            placeDao.insert(place)
+        }
     }
 
     fun delete(view : View){
